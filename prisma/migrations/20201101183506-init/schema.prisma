@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url = "***"
+}
+
+model Location {
+  id         String       @id @default(cuid())
+  city       String?
+  province   String?
+  country    String?
+  Experience Experience[]
+  Info       Info[]
+}
+
+model Info {
+  id          String    @id @default(cuid())
+  fullName    String
+  title       String
+  url         String
+  description String?
+  photo       String?
+  locationId  String?
+  location    Location? @relation(fields: [locationId], references: [id])
+  Profile     Profile[]
+}
+
+model Experience {
+  id               String    @id @default(cuid())
+  title            String
+  company          String?
+  employmentType   String?
+  startDate        String
+  endDate          String?
+  endDateIsPresent Boolean
+  durationInDays   Int
+  description      String?
+  locationId       String?
+  profileId        String?
+  location         Location? @relation(fields: [locationId], references: [id])
+  Profile          Profile?  @relation(fields: [profileId], references: [id])
+}
+
+model Education {
+  id             String   @id @default(cuid())
+  schoolName     String
+  degreeName     String
+  fieldOfStudy   String
+  startDate      String
+  endDate        String?
+  durationInDays Int
+  profileId      String?
+  Profile        Profile? @relation(fields: [profileId], references: [id])
+}
+
+model Skill {
+  id               String   @id @default(cuid())
+  skillName        String
+  endorsementCount Int
+  profileId        String?
+  Profile          Profile? @relation(fields: [profileId], references: [id])
+}
+
+model Profile {
+  id          String       @id @default(cuid())
+  url         String
+  infoId      String
+  instanceId  String?
+  info        Info         @relation(fields: [infoId], references: [id])
+  Instance    Instance?    @relation(fields: [instanceId], references: [id])
+  education   Education[]
+  experiences Experience[]
+  skills      Skill[]
+}
+
+model Url {
+  id         String    @id @default(cuid())
+  url        String
+  instanceId String?
+  Instance   Instance? @relation(fields: [instanceId], references: [id])
+}
+
+model Instance {
+  id         String    @id @default(cuid())
+  status     String
+  runningUrl String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  profiles   Profile[]
+  urls       Url[]
+}
