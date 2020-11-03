@@ -1,9 +1,17 @@
 import PQueue from "p-queue";
 
 import { LinkedInProfileScraper } from "./lib/scraper";
+import state from "./controllers/state";
 
-const runner = async ({ urls, scraper, instanceId, prisma }) => {
+
+const runner = async ({ urls, sessionCookieValue, instanceId, prisma }) => {
   const queue = new PQueue({ concurrency: 1 });
+
+  const scraper = new LinkedInProfileScraper();
+  scraper.options.sessionCookieValue = sessionCookieValue;
+  await scraper.init();
+  state.browsers += 1;
+
   urls.map((url) =>
     queue.add(async () => {
       await prisma.instance.update({
@@ -52,6 +60,7 @@ const runner = async ({ urls, scraper, instanceId, prisma }) => {
   );
 
   await queue.onIdle();
+  await scraper.close();
   await prisma.instance.update({
     where: { id: instanceId },
     data: {
@@ -59,6 +68,7 @@ const runner = async ({ urls, scraper, instanceId, prisma }) => {
       runningUrl: "",
     },
   });
+  state.browsers -= 1;
 };
 
 export { LinkedInProfileScraper };
