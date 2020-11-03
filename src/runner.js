@@ -71,5 +71,4 @@ const runner = async ({ urls, sessionCookieValue, instanceId, prisma }) => {
   state.browsers -= 1;
 };
 
-export { LinkedInProfileScraper };
 export default runner;
