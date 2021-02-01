@@ -121,14 +121,10 @@ export class LinkedInProfileScraper {
    * Check if browser and page exists
    */
 
-  async validateScraper(profileUrl) {
+  async validateScraper() {
     if (!this.browser)
       throw new Error("Browser is not set. Please run the setup method first.");
-    if (!profileUrl) throw new Error("No profileUrl given.");
     if (!this.page) await this.createPage();
-    if (!profileUrl.includes("linkedin.com/")) {
-      throw new Error("The given URL to scrape is not a linkedin.com url.");
-    }
   }
 
   /**
@@ -559,21 +555,10 @@ export class LinkedInProfileScraper {
   /**
    * Method to scrape a user profile.
    */
-  async run(profileUrl) {
+  async run() {
     this.logFnName = "run";
 
-    await this.createPage();
-    await this.validateScraper(profileUrl);
-
     try {
-      this.log(`navigating to LinkedIn profile: ${profileUrl}`);
-
-      await this.page.goto(profileUrl, {
-        waitUntil: "networkidle2",
-        timeout: this.options.timeout,
-      });
-      // check if still logged in or not
-      await this.checkIfLoggedIn();
       this.log(
         "scrolling the page to the bottom, so all the data gets loaded into the page..."
       );
@@ -607,6 +592,48 @@ export class LinkedInProfileScraper {
         education,
         skills,
       };
+    } catch (err) {
+      await this.closePage();
+      this.log("An error occurred during a run.");
+      // Throw the error up, allowing the user to handle this error himself.
+      throw err;
+    }
+  }
+
+  /**
+   * Method to scrape profile url.
+   */
+  async extractProfileURL(name) {
+    this.logFnName = "extractUsername";
+
+    await this.createPage();
+    await this.validateScraper();
+
+    try {
+      this.log(`navigating to LinkedIn people search: ${name}`);
+
+      await this.page.goto(
+        `https://www.linkedin.com/search/results/people/?keywords=${name}`,
+        {
+          waitUntil: "networkidle2",
+          timeout: this.options.timeout,
+        }
+      );
+      // check if still logged in or not
+      await this.checkIfLoggedIn();
+
+      try {
+        await this.page.waitForSelector(".reusable-search__result-container", { visible: true });
+        await this.page.click('.reusable-search__result-container');
+        await this.page.waitFor(2000);
+        const url = await this.page.url();
+        return url;
+      } catch (error) {
+        await this.closePage();
+        console.error(`No data found`);
+      }
+
+      return null;
     } catch (err) {
       await this.closePage();
       this.log("An error occurred during a run.");

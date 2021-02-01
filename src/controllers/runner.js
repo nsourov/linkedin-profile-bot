@@ -6,7 +6,7 @@ import state from "./state";
 
 const prisma = new PrismaClient();
 
-const runner = async ({ urls, sessionCookieValue, instanceId }) => {
+const runner = async ({ names, sessionCookieValue, instanceId }) => {
   const queue = new PQueue({ concurrency: 1 });
 
   const scraper = new LinkedInProfileScraper();
@@ -16,52 +16,58 @@ const runner = async ({ urls, sessionCookieValue, instanceId }) => {
 
   let isError = false;
 
-  urls.map((url) =>
+  names.map((name) =>
     queue.add(async () => {
       try {
         await prisma.instance.update({
           where: { id: instanceId },
           data: {
             status: "running",
-            runningUrl: url,
           },
         });
-        const profileData = await scraper.run(url);
-        await prisma.instance.update({
-          where: {
-            id: instanceId,
-          },
-          data: {
-            profiles: {
-              create: {
-                url,
-                info: {
-                  create: {
-                    ...profileData.userProfile,
-                    location: {
-                      create: profileData.userProfile.location,
+
+        const url = await scraper.extractProfileURL(name);
+        if (url) {
+          const profileData = await scraper.run();
+          await prisma.instance.update({
+            where: {
+              id: instanceId,
+            },
+            data: {
+              profiles: {
+                create: {
+                  url,
+                  info: {
+                    create: {
+                      ...profileData.userProfile,
+                      location: {
+                        create: profileData.userProfile.location,
+                      },
                     },
                   },
-                },
-                experiences: {
-                  create: profileData.experiences.map((experience) => ({
-                    ...experience,
-                    location: {
-                      create: experience.location,
-                    },
-                  })),
-                },
-                education: {
-                  create: profileData.education,
-                },
-                skills: {
-                  create: profileData.skills,
+                  experiences: {
+                    create: profileData.experiences.map((experience) => ({
+                      ...experience,
+                      location: {
+                        create: experience.location,
+                      },
+                    })),
+                  },
+                  education: {
+                    create: profileData.education,
+                  },
+                  skills: {
+                    create: profileData.skills,
+                  },
                 },
               },
             },
-          },
-        });
+          });
+        } else {
+          throw new Error("User not found");
+        }
       } catch (error) {
+        console.error(error)
         await prisma.instance.update({
           where: { id: instanceId },
           data: {
@@ -79,7 +85,6 @@ const runner = async ({ urls, sessionCookieValue, instanceId }) => {
     where: { id: instanceId },
     data: {
       status: isError ? "stopped" : "finished",
-      runningUrl: "",
     },
   });
   state.browsers -= 1;

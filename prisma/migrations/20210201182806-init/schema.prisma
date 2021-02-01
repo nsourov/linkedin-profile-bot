@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./data.db"
+  url = "***"
 }
 
 model Location {
@@ -84,11 +84,12 @@ model Name {
 }
 
 model Instance {
-  id        String    @id @default(cuid())
-  status    String
-  error     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  profiles  Profile[]
-  names     Name[]
+  id         String    @id @default(cuid())
+  status     String
+  targetName String?
+  error      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  profiles   Profile[]
+  names      Name[]
 }

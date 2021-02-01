@@ -14,10 +14,10 @@ export const startScraper = async (req, res) => {
     });
   }
 
-  const { urls, sessionCookieValue } = req.body;
-  if (typeof urls !== "object" || urls.length === 0) {
+  const { names, sessionCookieValue } = req.body;
+  if (typeof names !== "object" || names.length === 0) {
     return res.status(400).json({
-      message: "Urls required",
+      message: "List of names is required",
     });
   }
   if (!sessionCookieValue) {
@@ -28,12 +28,12 @@ export const startScraper = async (req, res) => {
 
   const newInstance = await prisma.instance.create({
     data: {
-      urls: { create: urls.map((url) => ({ url })) },
+      names: { create: names.map((name) => ({ name })) },
       status: "started",
     },
   });
   runner({
-    urls,
+    names,
     sessionCookieValue,
     instanceId: newInstance.id,
   });
@@ -48,7 +48,7 @@ export const resetDb = async (req, res) => {
     prisma.experience.deleteMany({ where: { id: { not: "" } } }),
     prisma.education.deleteMany({ where: { id: { not: "" } } }),
     prisma.skill.deleteMany({ where: { id: { not: "" } } }),
-    prisma.url.deleteMany({ where: { id: { not: "" } } }),
+    prisma.name.deleteMany({ where: { id: { not: "" } } }),
     prisma.instance.deleteMany({ where: { id: { not: "" } } }),
   ]);
   return res.json("All data from database are removed");
@@ -59,11 +59,17 @@ export const getInstance = async (req, res) => {
     where: { id: req.params.instanceId },
     include: {
       profiles: {
-        include: {
+        select: {
+          url: true,
           info: true,
           education: true,
           experiences: true,
           skills: true,
+        },
+      },
+      names: {
+        select: {
+          name: true,
         },
       },
     },
