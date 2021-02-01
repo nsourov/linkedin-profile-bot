@@ -1064,6 +1064,13 @@
     {
       "tag": "CreateField",
       "model": "Instance",
+      "field": "error",
+      "type": "String",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "Instance",
       "field": "createdAt",
       "type": "DateTime",
       "arity": "Required"

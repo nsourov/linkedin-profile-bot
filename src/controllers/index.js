@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import runner from "../runner";
+import runner from "./runner";
 import state from "./state";
 
 const prisma = new PrismaClient();
@@ -24,7 +24,7 @@ export const startScraper = async (req, res) => {
     return res.status(400).json({
       message: "Session cookie required",
     });
-  }  
+  }
 
   const newInstance = await prisma.instance.create({
     data: {
@@ -36,7 +36,6 @@ export const startScraper = async (req, res) => {
     urls,
     sessionCookieValue,
     instanceId: newInstance.id,
-    prisma,
   });
   return res.json(newInstance);
 };

@@ -274,7 +274,6 @@ export class LinkedInProfileScraper {
     this.logFnName = "checkIfLoggedIn";
 
     this.log("checking if we are still logged in...");
-
     const url = this.page.url();
     const isLoggedIn = !url.includes("/authwall") || !url.includes("/login");
 
@@ -284,7 +283,7 @@ export class LinkedInProfileScraper {
       const errorMessage =
         'Bad news, we are not logged in! Your session seems to be expired. Use your browser to login again with your LinkedIn credentials and extract the "li_at" cookie value for the "sessionCookieValue" option.';
       this.log(errorMessage);
-      throw new SessionExpired(errorMessage);
+      throw new Error(errorMessage);
     }
   }
 
