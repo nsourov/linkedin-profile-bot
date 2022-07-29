@@ -19,6 +19,6 @@ dotenv -e .env yarn admin
 
 | Type   |   Route   |                   Action                   |                   Body                   |
 | ------ | :-------: | :----------------------------------------: | :----------------------------------------: |
-| POST    |  /start   |               Start scraper                |               `{urls: []}`                |
+| POST    |  /start   |               Start scraper                |               `{urls: [], sessionCookieValue: "YOUR_COOKIES"}`                |
 | DELETE |  /reset   |               Reset Database               |
 | GET    | /instance | Get single instance data or current status |
