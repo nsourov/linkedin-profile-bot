@@ -17,8 +17,8 @@ dotenv -e .env yarn admin
 
 ## Routes
 
-| Type   |   Route   |                   Action                   |
-| ------ | :-------: | :----------------------------------------: |
-| GET    |  /start   |               Start scraper                |
+| Type   |   Route   |                   Action                   |                   Body                   |
+| ------ | :-------: | :----------------------------------------: | :----------------------------------------: |
+| POST    |  /start   |               Start scraper                |               `{urls: []}`                |
 | DELETE |  /reset   |               Reset Database               |
 | GET    | /instance | Get single instance data or current status |
